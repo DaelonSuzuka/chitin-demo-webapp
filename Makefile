@@ -10,7 +10,7 @@ MAKEFLAGS += -s
 
 # run the application
 run: venv
-	$(VENV_PYTHON) src/app.py --host 0.0.0.0 --cmd-args "-c 'screen -R chitin-demo /dev/ttyUSB1 1000000'"
+	$(VENV_PYTHON) src/app.py --host 0.0.0.0 --debug --cmd-args "-c 'screen -R chitin-demo /dev/ttyUSB1 1000000'"
 
 # remove the various build outputs
 clean:

@@ -10,9 +10,10 @@ import termios
 import struct
 import fcntl
 import shlex
-from camera import VideoCamera
-import cv2
+from auth import requires_auth
 
+
+from camera import Camera
 
 __version__ = "0.4.0.2"
 
@@ -21,9 +22,6 @@ app.config["SECRET_KEY"] = "secret!"
 app.config["fd"] = None
 app.config["child_pid"] = None
 socketio = SocketIO(app)
-
-
-video_stream = VideoCamera()
 
 
 def set_winsize(fd, row, col, xpix=0, ypix=0):
@@ -45,21 +43,24 @@ def read_and_forward_pty_output():
                 except:
                     print('error')
 
-
 @app.route("/")
+# @requires_auth
 def index():
     return render_template("index.html")
 
 def gen(camera):
+    """Video streaming generator function."""
     while True:
         frame = camera.get_frame()
         yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(gen(video_stream),
-                mimetype='multipart/x-mixed-replace; boundary=frame')
+    """Video streaming route. Put this in the src attribute of an img tag."""
+    return Response(gen(Camera()),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @socketio.on("pty-input", namespace="/pty")
